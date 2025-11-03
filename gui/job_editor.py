@@ -40,6 +40,23 @@ class JobEditorWindow(ctk.CTkToplevel):
         if job:
             self.source_paths = job.source_paths.copy()
         
+        # Step data storage (to preserve data when switching steps)
+        self.step_data = {
+            "name": job.name if job else "",
+            "description": job.description if job else "",
+            "destination": job.destination_path if job else "",
+            "backup_type": job.backup_type if job else "full",
+            "schedule_type": job.schedule.get("type", "manual") if job else "manual",
+            "schedule_time": job.schedule.get("time", "00:00") if job else "00:00",
+            "include_ext": ",".join(job.filters.get("include_extensions", [])) if job else "",
+            "exclude_ext": ",".join(job.filters.get("exclude_extensions", [])) if job else "",
+            "min_size": str(job.filters.get("min_size_mb", 0)) if job else "0",
+            "max_size": str(job.filters.get("max_size_mb", 0)) if job else "0",
+            "compression": job.compression if job else True,
+            "encryption": job.encryption if job else False,
+            "enabled": job.enabled if job else True,
+        }
+        
         # Create UI
         self._create_ui()
         self._load_job_data()
@@ -138,7 +155,10 @@ class JobEditorWindow(ctk.CTkToplevel):
             self._create_advanced_step()
         
         # Update navigation buttons
-        self.prev_button.pack(side="left" if step > 0 else "forget")
+        if step > 0:
+            self.prev_button.pack(side="left")
+        else:
+            self.prev_button.pack_forget()
         
         if step < len(self.steps) - 1:
             self.next_button.pack(side="right")
@@ -157,6 +177,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         ).pack(anchor="w", pady=(10, 5))
         
         self.name_entry = ctk.CTkEntry(self.content_frame, height=35)
+        self.name_entry.insert(0, self.step_data["name"])
         self.name_entry.pack(fill="x", pady=(0, 15))
         
         # Description
@@ -167,6 +188,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         ).pack(anchor="w", pady=(10, 5))
         
         self.description_entry = ctk.CTkTextbox(self.content_frame, height=80)
+        self.description_entry.insert("1.0", self.step_data["description"])
         self.description_entry.pack(fill="x", pady=(0, 15))
         
         # Source Folders
@@ -199,6 +221,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         dest_frame.pack(fill="x", pady=(0, 15))
         
         self.destination_entry = ctk.CTkEntry(dest_frame, height=35)
+        self.destination_entry.insert(0, self.step_data["destination"])
         self.destination_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
         
         ctk.CTkButton(
@@ -216,7 +239,7 @@ class JobEditorWindow(ctk.CTkToplevel):
             font=ctk.CTkFont(size=14, weight="bold")
         ).pack(anchor="w", pady=(10, 5))
         
-        self.backup_type_var = ctk.StringVar(value="full")
+        self.backup_type_var = ctk.StringVar(value=self.step_data["backup_type"])
         
         types_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
         types_frame.pack(fill="x")
@@ -251,7 +274,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         ).pack(pady=20)
         
         # Schedule type
-        self.schedule_type_var = ctk.StringVar(value="manual")
+        self.schedule_type_var = ctk.StringVar(value=self.step_data["schedule_type"])
         
         ctk.CTkRadioButton(
             self.content_frame,
@@ -273,6 +296,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         
         ctk.CTkLabel(time_frame, text="Time:").pack(side="left", padx=10)
         self.time_entry = ctk.CTkEntry(time_frame, width=100, placeholder_text="00:00")
+        self.time_entry.insert(0, self.step_data["schedule_time"])
         self.time_entry.pack(side="left")
         
         ctk.CTkRadioButton(
@@ -305,6 +329,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         ).pack(anchor="w", pady=(10, 5))
         
         self.include_ext_entry = ctk.CTkEntry(self.content_frame, height=35)
+        self.include_ext_entry.insert(0, self.step_data["include_ext"])
         self.include_ext_entry.pack(fill="x", pady=(0, 15))
         
         # Exclude extensions
@@ -315,6 +340,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         ).pack(anchor="w", pady=(10, 5))
         
         self.exclude_ext_entry = ctk.CTkEntry(self.content_frame, height=35)
+        self.exclude_ext_entry.insert(0, self.step_data["exclude_ext"])
         self.exclude_ext_entry.pack(fill="x", pady=(0, 15))
         
         # Size filters
@@ -323,10 +349,12 @@ class JobEditorWindow(ctk.CTkToplevel):
         
         ctk.CTkLabel(size_frame, text="Min Size (MB):").pack(side="left", padx=5)
         self.min_size_entry = ctk.CTkEntry(size_frame, width=100, placeholder_text="0")
+        self.min_size_entry.insert(0, self.step_data["min_size"])
         self.min_size_entry.pack(side="left", padx=5)
         
         ctk.CTkLabel(size_frame, text="Max Size (MB):").pack(side="left", padx=5)
         self.max_size_entry = ctk.CTkEntry(size_frame, width=100, placeholder_text="0")
+        self.max_size_entry.insert(0, self.step_data["max_size"])
         self.max_size_entry.pack(side="left", padx=5)
     
     def _create_advanced_step(self):
@@ -338,7 +366,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         ).pack(pady=20)
         
         # Compression
-        self.compression_var = ctk.BooleanVar(value=True)
+        self.compression_var = ctk.BooleanVar(value=self.step_data["compression"])
         ctk.CTkCheckBox(
             self.content_frame,
             text="Enable Compression (ZIP)",
@@ -346,7 +374,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         ).pack(anchor="w", pady=10)
         
         # Encryption
-        self.encryption_var = ctk.BooleanVar(value=False)
+        self.encryption_var = ctk.BooleanVar(value=self.step_data["encryption"])
         ctk.CTkCheckBox(
             self.content_frame,
             text="Enable Encryption (Coming soon)",
@@ -355,7 +383,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         ).pack(anchor="w", pady=10)
         
         # Enabled
-        self.enabled_var = ctk.BooleanVar(value=True)
+        self.enabled_var = ctk.BooleanVar(value=self.step_data["enabled"])
         ctk.CTkCheckBox(
             self.content_frame,
             text="Job Enabled",
@@ -408,11 +436,47 @@ class JobEditorWindow(ctk.CTkToplevel):
     
     def _load_job_data(self):
         """Load existing job data."""
-        if self.job is None:
-            return
-        
-        # Will be populated when each step is shown
+        # Data is already loaded in step_data dictionary
         pass
+    
+    def _save_step_data(self, step: int):
+        """Save data from current step before switching."""
+        try:
+            if step == 0:  # Basic step
+                if hasattr(self, 'name_entry'):
+                    self.step_data["name"] = self.name_entry.get()
+                if hasattr(self, 'description_entry'):
+                    self.step_data["description"] = self.description_entry.get("1.0", "end").strip()
+                if hasattr(self, 'destination_entry'):
+                    self.step_data["destination"] = self.destination_entry.get()
+                if hasattr(self, 'backup_type_var'):
+                    self.step_data["backup_type"] = self.backup_type_var.get()
+            
+            elif step == 1:  # Schedule step
+                if hasattr(self, 'schedule_type_var'):
+                    self.step_data["schedule_type"] = self.schedule_type_var.get()
+                if hasattr(self, 'time_entry'):
+                    self.step_data["schedule_time"] = self.time_entry.get()
+            
+            elif step == 2:  # Filters step
+                if hasattr(self, 'include_ext_entry'):
+                    self.step_data["include_ext"] = self.include_ext_entry.get()
+                if hasattr(self, 'exclude_ext_entry'):
+                    self.step_data["exclude_ext"] = self.exclude_ext_entry.get()
+                if hasattr(self, 'min_size_entry'):
+                    self.step_data["min_size"] = self.min_size_entry.get()
+                if hasattr(self, 'max_size_entry'):
+                    self.step_data["max_size"] = self.max_size_entry.get()
+            
+            elif step == 3:  # Advanced step
+                if hasattr(self, 'compression_var'):
+                    self.step_data["compression"] = self.compression_var.get()
+                if hasattr(self, 'encryption_var'):
+                    self.step_data["encryption"] = self.encryption_var.get()
+                if hasattr(self, 'enabled_var'):
+                    self.step_data["enabled"] = self.enabled_var.get()
+        except Exception as e:
+            print(f"Error saving step data: {e}")
     
     def _previous_step(self):
         """Go to previous step."""
@@ -426,6 +490,9 @@ class JobEditorWindow(ctk.CTkToplevel):
             # Validate current step
             if not self._validate_step(self.current_step):
                 return
+            
+            # Save current step data
+            self._save_step_data(self.current_step)
             
             self.current_step += 1
             self._show_step(self.current_step)
@@ -452,17 +519,20 @@ class JobEditorWindow(ctk.CTkToplevel):
         if not self._validate_step(self.current_step):
             return
         
-        # Collect data
+        # Save current step data first
+        self._save_step_data(self.current_step)
+        
+        # Collect data from step_data
         schedule_config = {
-            "type": self.schedule_type_var.get(),
-            "time": self.time_entry.get() if self.schedule_type_var.get() != "manual" else None
+            "type": self.step_data["schedule_type"],
+            "time": self.step_data["schedule_time"] if self.step_data["schedule_type"] != "manual" else None
         }
         
         filters = {
-            "include_extensions": [ext.strip() for ext in self.include_ext_entry.get().split(",") if ext.strip()],
-            "exclude_extensions": [ext.strip() for ext in self.exclude_ext_entry.get().split(",") if ext.strip()],
-            "min_size_mb": float(self.min_size_entry.get() or 0),
-            "max_size_mb": float(self.max_size_entry.get() or 0),
+            "include_extensions": [ext.strip() for ext in self.step_data["include_ext"].split(",") if ext.strip()],
+            "exclude_extensions": [ext.strip() for ext in self.step_data["exclude_ext"].split(",") if ext.strip()],
+            "min_size_mb": float(self.step_data["min_size"] or 0),
+            "max_size_mb": float(self.step_data["max_size"] or 0),
             "exclude_patterns": []
         }
         
@@ -470,30 +540,30 @@ class JobEditorWindow(ctk.CTkToplevel):
             # Update existing job
             self.job_manager.update_job(
                 self.job.job_id,
-                name=self.name_entry.get().strip(),
-                description=self.description_entry.get("1.0", "end").strip(),
+                name=self.step_data["name"],
+                description=self.step_data["description"],
                 source_paths=self.source_paths,
-                destination_path=self.destination_entry.get().strip(),
-                backup_type=self.backup_type_var.get(),
+                destination_path=self.step_data["destination"],
+                backup_type=self.step_data["backup_type"],
                 schedule=schedule_config,
                 filters=filters,
-                compression=self.compression_var.get(),
-                encryption=self.encryption_var.get(),
-                enabled=self.enabled_var.get()
+                compression=self.step_data["compression"],
+                encryption=self.step_data["encryption"],
+                enabled=self.step_data["enabled"]
             )
         else:
             # Create new job
             new_job = BackupJob(
-                name=self.name_entry.get().strip(),
-                description=self.description_entry.get("1.0", "end").strip(),
+                name=self.step_data["name"],
+                description=self.step_data["description"],
                 source_paths=self.source_paths,
-                destination_path=self.destination_entry.get().strip(),
-                backup_type=self.backup_type_var.get(),
+                destination_path=self.step_data["destination"],
+                backup_type=self.step_data["backup_type"],
                 schedule=schedule_config,
                 filters=filters,
-                compression=self.compression_var.get(),
-                encryption=self.encryption_var.get(),
-                enabled=self.enabled_var.get()
+                compression=self.step_data["compression"],
+                encryption=self.step_data["encryption"],
+                enabled=self.step_data["enabled"]
             )
             self.job_manager.create_job(new_job)
         
