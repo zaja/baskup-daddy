@@ -22,13 +22,13 @@ class JobEditorWindow(ctk.CTkToplevel):
         # Window setup
         title = t("job_editor.create_title") if job is None else t("job_editor.title")
         self.title(title)
-        self.geometry("800x600")
+        self.geometry("800x840")
         
         # Center window
         self.transient(parent)
         self.update_idletasks()
         x = parent.winfo_x() + (parent.winfo_width() - 800) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - 600) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - 840) // 2
         self.geometry(f"+{x}+{y}")
         
         # Current step
@@ -66,7 +66,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         """Create the UI."""
         # Main container
         main_frame = ctk.CTkFrame(self, corner_radius=0)
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True, padx=30, pady=30)
         
         # Steps indicator
         steps_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -91,7 +91,10 @@ class JobEditorWindow(ctk.CTkToplevel):
         
         # Content area
         self.content_frame = ctk.CTkFrame(main_frame)
-        self.content_frame.pack(fill="both", expand=True, pady=(0, 20))
+        self.content_frame.pack(fill="both", expand=True, pady=(0, 20), padx=5)
+        
+        # Add internal padding to content
+        self.content_frame.configure(fg_color="transparent")
         
         # Navigation buttons
         nav_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -174,32 +177,32 @@ class JobEditorWindow(ctk.CTkToplevel):
             self.content_frame,
             text=t("job_editor.job_name"),
             font=ctk.CTkFont(size=14, weight="bold")
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(15, 5), padx=15)
         
         self.name_entry = ctk.CTkEntry(self.content_frame, height=35)
         self.name_entry.insert(0, self.step_data["name"])
-        self.name_entry.pack(fill="x", pady=(0, 15))
+        self.name_entry.pack(fill="x", pady=(0, 15), padx=15)
         
         # Description
         ctk.CTkLabel(
             self.content_frame,
             text=t("job_editor.description"),
             font=ctk.CTkFont(size=14, weight="bold")
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(10, 5), padx=15)
         
         self.description_entry = ctk.CTkTextbox(self.content_frame, height=80)
         self.description_entry.insert("1.0", self.step_data["description"])
-        self.description_entry.pack(fill="x", pady=(0, 15))
+        self.description_entry.pack(fill="x", pady=(0, 15), padx=15)
         
         # Source Folders
         ctk.CTkLabel(
             self.content_frame,
             text=t("job_editor.source_folders"),
             font=ctk.CTkFont(size=14, weight="bold")
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(10, 5), padx=15)
         
         self.sources_frame = ctk.CTkScrollableFrame(self.content_frame, height=150)
-        self.sources_frame.pack(fill="x", pady=(0, 10))
+        self.sources_frame.pack(fill="x", pady=(0, 10), padx=15)
         
         self._refresh_sources()
         
@@ -208,17 +211,17 @@ class JobEditorWindow(ctk.CTkToplevel):
             text=f"+ {t('job_editor.add_source')}",
             command=self._add_source,
             height=35
-        ).pack(fill="x", pady=(0, 15))
+        ).pack(fill="x", pady=(0, 15), padx=15)
         
         # Destination
         ctk.CTkLabel(
             self.content_frame,
             text=t("job_editor.destination"),
             font=ctk.CTkFont(size=14, weight="bold")
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(10, 5), padx=15)
         
         dest_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        dest_frame.pack(fill="x", pady=(0, 15))
+        dest_frame.pack(fill="x", pady=(0, 15), padx=15)
         
         self.destination_entry = ctk.CTkEntry(dest_frame, height=35)
         self.destination_entry.insert(0, self.step_data["destination"])
@@ -237,12 +240,12 @@ class JobEditorWindow(ctk.CTkToplevel):
             self.content_frame,
             text=t("job_editor.backup_type"),
             font=ctk.CTkFont(size=14, weight="bold")
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(10, 5), padx=15)
         
         self.backup_type_var = ctk.StringVar(value=self.step_data["backup_type"])
         
         types_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        types_frame.pack(fill="x")
+        types_frame.pack(fill="x", padx=15)
         
         ctk.CTkRadioButton(
             types_frame,
@@ -271,7 +274,7 @@ class JobEditorWindow(ctk.CTkToplevel):
             self.content_frame,
             text="Schedule Configuration",
             font=ctk.CTkFont(size=18, weight="bold")
-        ).pack(pady=20)
+        ).pack(pady=20, padx=15)
         
         # Schedule type
         self.schedule_type_var = ctk.StringVar(value=self.step_data["schedule_type"])
@@ -281,18 +284,18 @@ class JobEditorWindow(ctk.CTkToplevel):
             text="Manual (Run manually only)",
             variable=self.schedule_type_var,
             value="manual"
-        ).pack(anchor="w", pady=5)
+        ).pack(anchor="w", pady=5, padx=15)
         
         ctk.CTkRadioButton(
             self.content_frame,
             text="Daily",
             variable=self.schedule_type_var,
             value="daily"
-        ).pack(anchor="w", pady=5)
+        ).pack(anchor="w", pady=5, padx=15)
         
         # Time picker for daily
         time_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        time_frame.pack(fill="x", pady=10)
+        time_frame.pack(fill="x", pady=10, padx=15)
         
         ctk.CTkLabel(time_frame, text="Time:").pack(side="left", padx=10)
         self.time_entry = ctk.CTkEntry(time_frame, width=100, placeholder_text="00:00")
@@ -304,14 +307,14 @@ class JobEditorWindow(ctk.CTkToplevel):
             text="Weekly",
             variable=self.schedule_type_var,
             value="weekly"
-        ).pack(anchor="w", pady=5)
+        ).pack(anchor="w", pady=5, padx=15)
         
         ctk.CTkRadioButton(
             self.content_frame,
             text="Monthly",
             variable=self.schedule_type_var,
             value="monthly"
-        ).pack(anchor="w", pady=5)
+        ).pack(anchor="w", pady=5, padx=15)
     
     def _create_filters_step(self):
         """Create filters step."""
@@ -319,33 +322,33 @@ class JobEditorWindow(ctk.CTkToplevel):
             self.content_frame,
             text="File Filters",
             font=ctk.CTkFont(size=18, weight="bold")
-        ).pack(pady=20)
+        ).pack(pady=20, padx=15)
         
         # Include extensions
         ctk.CTkLabel(
             self.content_frame,
             text="Include Extensions (comma-separated, e.g., pdf,docx,xlsx):",
             font=ctk.CTkFont(size=12)
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(10, 5), padx=15)
         
         self.include_ext_entry = ctk.CTkEntry(self.content_frame, height=35)
         self.include_ext_entry.insert(0, self.step_data["include_ext"])
-        self.include_ext_entry.pack(fill="x", pady=(0, 15))
+        self.include_ext_entry.pack(fill="x", pady=(0, 15), padx=15)
         
         # Exclude extensions
         ctk.CTkLabel(
             self.content_frame,
             text="Exclude Extensions (comma-separated, e.g., tmp,log,cache):",
             font=ctk.CTkFont(size=12)
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(10, 5), padx=15)
         
         self.exclude_ext_entry = ctk.CTkEntry(self.content_frame, height=35)
         self.exclude_ext_entry.insert(0, self.step_data["exclude_ext"])
-        self.exclude_ext_entry.pack(fill="x", pady=(0, 15))
+        self.exclude_ext_entry.pack(fill="x", pady=(0, 15), padx=15)
         
         # Size filters
         size_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        size_frame.pack(fill="x", pady=10)
+        size_frame.pack(fill="x", pady=10, padx=15)
         
         ctk.CTkLabel(size_frame, text="Min Size (MB):").pack(side="left", padx=5)
         self.min_size_entry = ctk.CTkEntry(size_frame, width=100, placeholder_text="0")
@@ -363,7 +366,7 @@ class JobEditorWindow(ctk.CTkToplevel):
             self.content_frame,
             text="Advanced Options",
             font=ctk.CTkFont(size=18, weight="bold")
-        ).pack(pady=20)
+        ).pack(pady=20, padx=15)
         
         # Compression
         self.compression_var = ctk.BooleanVar(value=self.step_data["compression"])
@@ -371,7 +374,7 @@ class JobEditorWindow(ctk.CTkToplevel):
             self.content_frame,
             text="Enable Compression (ZIP)",
             variable=self.compression_var
-        ).pack(anchor="w", pady=10)
+        ).pack(anchor="w", pady=10, padx=15)
         
         # Encryption
         self.encryption_var = ctk.BooleanVar(value=self.step_data["encryption"])
@@ -380,7 +383,7 @@ class JobEditorWindow(ctk.CTkToplevel):
             text="Enable Encryption (Coming soon)",
             variable=self.encryption_var,
             state="disabled"
-        ).pack(anchor="w", pady=10)
+        ).pack(anchor="w", pady=10, padx=15)
         
         # Enabled
         self.enabled_var = ctk.BooleanVar(value=self.step_data["enabled"])
@@ -388,7 +391,7 @@ class JobEditorWindow(ctk.CTkToplevel):
             self.content_frame,
             text="Job Enabled",
             variable=self.enabled_var
-        ).pack(anchor="w", pady=10)
+        ).pack(anchor="w", pady=10, padx=15)
     
     def _refresh_sources(self):
         """Refresh source paths list."""
