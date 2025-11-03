@@ -182,16 +182,18 @@ class BackupEngine:
         
         # Create timestamped backup folder/file inside job folder
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_dir = job_folder / f"backup_{timestamp}"
-        backup_dir.mkdir(parents=True, exist_ok=True)
         
         # Perform backup
         try:
             if compression:
-                archive_path = backup_dir.parent / f"backup_{timestamp}.zip"
+                # For compression, create ZIP file directly in job folder
+                archive_path = job_folder / f"backup_{timestamp}.zip"
                 self._backup_with_compression(source_paths, archive_path, filters, progress_callback)
                 backup_path = str(archive_path)
             else:
+                # For no compression, create timestamped folder in job folder
+                backup_dir = job_folder / f"backup_{timestamp}"
+                backup_dir.mkdir(parents=True, exist_ok=True)
                 self._backup_without_compression(source_paths, backup_dir, filters, progress_callback)
                 backup_path = str(backup_dir)
             
@@ -215,8 +217,8 @@ class BackupEngine:
                 "duration_seconds": (self.progress.end_time - self.progress.start_time).total_seconds(),
             }
             
-            # Save metadata file
-            metadata_file = Path(backup_path).parent / f"backup_{timestamp}_metadata.json"
+            # Save metadata file in job folder
+            metadata_file = job_folder / f"backup_{timestamp}_metadata.json"
             import json
             with open(metadata_file, "w", encoding="utf-8") as f:
                 json.dump(metadata, f, indent=2, ensure_ascii=False)
