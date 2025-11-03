@@ -162,13 +162,13 @@ class MainWindow(ctk.CTk):
         # Initialize managers
         self.i18n = get_i18n()
         self.theme_manager = get_theme_manager()
-        self.config = get_config()
+        self.app_config = get_config()
         self.job_manager = get_job_manager()
         self.scheduler = BackupScheduler(self.job_manager)
         
         # Apply saved settings
-        self.i18n.set_language(self.config.get("language", "hr"))
-        self.theme_manager.set_theme(self.config.get("theme", "dark"))
+        self.i18n.set_language(self.app_config.get("language", "hr"))
+        self.theme_manager.set_theme(self.app_config.get("theme", "dark"))
         
         # Window setup
         self.title(t("app_title"))
@@ -387,8 +387,8 @@ class MainWindow(ctk.CTk):
     def _on_settings_changed(self):
         """Callback when settings are changed."""
         # Reload settings
-        self.i18n.set_language(self.config.get("language", "hr"))
-        self.theme_manager.set_theme(self.config.get("theme", "dark"))
+        self.i18n.set_language(self.app_config.get("language", "hr"))
+        self.theme_manager.set_theme(self.app_config.get("theme", "dark"))
         
         # Recreate UI to apply changes
         # In a production app, you'd want to update existing widgets
