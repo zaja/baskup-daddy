@@ -22,8 +22,8 @@ class JobEditorWindow(ctk.CTkToplevel):
         # Window setup
         title = t("job_editor.create_title") if job is None else t("job_editor.title")
         self.title(title)
-        self.geometry("800x840")
-        self.minsize(700, 700)
+        self.geometry("800x890")
+        self.minsize(700, 750)
         
         # Center window
         self.transient(parent)
@@ -99,7 +99,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         
         # Navigation buttons
         nav_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        nav_frame.pack(fill="x")
+        nav_frame.pack(fill="x", pady=(10, 0))
         
         self.prev_button = ctk.CTkButton(
             nav_frame,

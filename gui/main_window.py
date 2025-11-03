@@ -50,13 +50,14 @@ class DashboardCard(ctk.CTkFrame):
 class JobRow(ctk.CTkFrame):
     """Single job row in the jobs table."""
     
-    def __init__(self, parent, job: BackupJob, on_run, on_edit, on_delete):
+    def __init__(self, parent, job: BackupJob, on_run, on_edit, on_delete, on_history=None):
         super().__init__(parent, corner_radius=5, fg_color="transparent")
         
         self.job = job
         self.on_run = on_run
         self.on_edit = on_edit
         self.on_delete = on_delete
+        self.on_history = on_history
         
         # Configure grid
         self.grid_columnconfigure(0, weight=2)  # Name
@@ -129,6 +130,14 @@ class JobRow(ctk.CTkFrame):
             width=30,
             command=lambda: self.on_edit(job.job_id)
         ).pack(side="left", padx=2)
+        
+        if self.on_history:
+            ctk.CTkButton(
+                actions_frame,
+                text="📜",
+                width=30,
+                command=lambda: self.on_history(job.job_id)
+            ).pack(side="left", padx=2)
         
         ctk.CTkButton(
             actions_frame,
@@ -327,7 +336,8 @@ class MainWindow(ctk.CTk):
                     job,
                     self._run_job,
                     self._edit_job,
-                    self._delete_job
+                    self._delete_job,
+                    self._show_job_history
                 )
                 job_row.pack(fill="x", pady=2)
     
@@ -458,9 +468,39 @@ class MainWindow(ctk.CTk):
             "Please restart the application for all changes to take effect."
         )
     
+    def _show_job_history(self, job_id: str):
+        """Show history for specific job."""
+        job = self.job_manager.get_job(job_id)
+        if job:
+            from gui.history_window import HistoryWindow
+            history = HistoryWindow(self, job.name, job.destination_path)
+            history.grab_set()
+    
     def _show_history(self):
         """Show backup history."""
-        messagebox.showinfo(t("app_title"), "History view - Coming soon!")
+        # Get all jobs for selection
+        jobs = self.job_manager.get_all_jobs()
+        
+        if not jobs:
+            messagebox.showinfo(
+                t("app_title"),
+                t("history.no_jobs")
+            )
+            return
+        
+        # If only one job, open it directly
+        if len(jobs) == 1:
+            from gui.history_window import HistoryWindow
+            history = HistoryWindow(self, jobs[0].name, jobs[0].destination_path)
+            history.grab_set()
+            return
+        
+        # Multiple jobs - show selection dialog
+        from gui.history_window import HistoryWindow
+        
+        # For now, open first job (TODO: add job selection dialog)
+        history = HistoryWindow(self, jobs[0].name, jobs[0].destination_path)
+        history.grab_set()
     
     def _show_about(self):
         """Show about dialog."""
