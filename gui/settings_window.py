@@ -19,13 +19,14 @@ class SettingsWindow(ctk.CTkToplevel):
         
         # Window setup
         self.title(t("settings.title"))
-        self.geometry("600x500")
+        self.geometry("600x400")
+        self.minsize(500, 350)
         
         # Center window
         self.transient(parent)
         self.update_idletasks()
         x = parent.winfo_x() + (parent.winfo_width() - 600) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - 500) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - 400) // 2
         self.geometry(f"+{x}+{y}")
         
         self._create_ui()

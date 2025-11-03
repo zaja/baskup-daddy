@@ -23,6 +23,7 @@ class JobEditorWindow(ctk.CTkToplevel):
         title = t("job_editor.create_title") if job is None else t("job_editor.title")
         self.title(title)
         self.geometry("800x840")
+        self.minsize(700, 700)
         
         # Center window
         self.transient(parent)

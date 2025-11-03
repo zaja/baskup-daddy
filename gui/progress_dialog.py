@@ -20,13 +20,14 @@ class ProgressDialog(ctk.CTkToplevel):
         
         # Window setup
         self.title(f"{t('progress.title')} - {job_name}")
-        self.geometry("700x500")
+        self.geometry("700x550")
+        self.minsize(600, 500)
         
         # Center window
         self.transient(parent)
         self.update_idletasks()
         x = parent.winfo_x() + (parent.winfo_width() - 700) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - 500) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - 550) // 2
         self.geometry(f"+{x}+{y}")
         
         # Prevent closing during backup

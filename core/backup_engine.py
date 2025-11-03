@@ -272,12 +272,21 @@ class BackupEngine:
             arcname = str(file_path.relative_to(base_path))
             self.progress.current_file = str(file_path)
             self.progress.current_file_size = file_path.stat().st_size
+            self.progress.current_file_processed = 0
             
+            # Update progress before writing
+            if progress_callback:
+                progress_callback(self.progress)
+            
+            # Write file to zip
             zipf.write(file_path, arcname)
             
+            # Mark file as complete
+            self.progress.current_file_processed = self.progress.current_file_size
             self.progress.processed_files += 1
             self.progress.processed_size += self.progress.current_file_size
             
+            # Update progress after writing
             if progress_callback:
                 progress_callback(self.progress)
                 
@@ -328,12 +337,21 @@ class BackupEngine:
         try:
             self.progress.current_file = str(src)
             self.progress.current_file_size = src.stat().st_size
+            self.progress.current_file_processed = 0
             
+            # Update progress before copying
+            if progress_callback:
+                progress_callback(self.progress)
+            
+            # Copy file
             shutil.copy2(src, dest)
             
+            # Mark file as complete
+            self.progress.current_file_processed = self.progress.current_file_size
             self.progress.processed_files += 1
             self.progress.processed_size += self.progress.current_file_size
             
+            # Update progress after copying
             if progress_callback:
                 progress_callback(self.progress)
                 
