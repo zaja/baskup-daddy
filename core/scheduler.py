@@ -90,7 +90,8 @@ class BackupScheduler:
                 destination_path=job.destination_path,
                 backup_type=job.backup_type,
                 filters=job.filters,
-                compression=job.compression
+                compression=job.compression,
+                job_name=job.name
             )
             
             # Update job status

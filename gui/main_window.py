@@ -401,7 +401,8 @@ class MainWindow(ctk.CTk):
                     backup_type=job.backup_type,
                     filters=job.filters,
                     compression=job.compression,
-                    progress_callback=update_progress
+                    progress_callback=update_progress,
+                    job_name=job.name
                 )
                 
                 # Update job

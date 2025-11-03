@@ -133,7 +133,8 @@ class BackupEngine:
         backup_type: str = "full",
         filters: Dict[str, Any] = None,
         compression: bool = True,
-        progress_callback: Optional[Callable[[BackupProgress], None]] = None
+        progress_callback: Optional[Callable[[BackupProgress], None]] = None,
+        job_name: str = None
     ) -> Dict[str, Any]:
         """
         Perform backup operation.
@@ -145,6 +146,7 @@ class BackupEngine:
             filters: File filters
             compression: Whether to compress the backup
             progress_callback: Optional callback for progress updates
+            job_name: Optional job name for folder organization
             
         Returns:
             Dictionary with backup results
@@ -161,10 +163,26 @@ class BackupEngine:
         self.progress.total_size = total_size
         self.progress.total_files = total_files
         
-        # Create destination directory
+        # Create job-specific folder structure
         dest = Path(destination_path)
+        
+        # Use job name or first source folder name for organization
+        if job_name:
+            # Sanitize job name for folder
+            folder_name = "".join(c if c.isalnum() or c in (' ', '-', '_') else '_' for c in job_name)
+            folder_name = folder_name.strip().replace(' ', '_')
+        else:
+            # Use first source folder name
+            first_source = Path(source_paths[0])
+            folder_name = first_source.name if first_source.is_dir() else first_source.stem
+        
+        # Create job folder
+        job_folder = dest / folder_name
+        job_folder.mkdir(parents=True, exist_ok=True)
+        
+        # Create timestamped backup folder/file inside job folder
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_dir = dest / f"backup_{timestamp}"
+        backup_dir = job_folder / f"backup_{timestamp}"
         backup_dir.mkdir(parents=True, exist_ok=True)
         
         # Perform backup
