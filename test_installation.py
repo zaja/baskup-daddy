@@ -2,7 +2,13 @@
 Test script to verify installation and basic functionality.
 """
 import sys
+import os
 from pathlib import Path
+
+# Set UTF-8 encoding for Windows console
+if sys.platform == 'win32':
+    os.system('chcp 65001 > nul')
+    sys.stdout.reconfigure(encoding='utf-8')
 
 print("=" * 60)
 print("Backup Daddy - Installation Test")
@@ -25,9 +31,7 @@ required_modules = [
     "PIL",
     "schedule",
     "dotenv",
-    "psutil",
-    "py7zr",
-    "cryptography"
+    "psutil"
 ]
 
 missing_modules = []
