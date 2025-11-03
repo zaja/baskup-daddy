@@ -362,11 +362,71 @@ class MainWindow(ctk.CTk):
     
     def _run_job(self, job_id: str):
         """Run a job immediately."""
-        self.scheduler.run_job_now(job_id)
-        messagebox.showinfo(
-            t("app_title"),
-            t("messages.backup_started")
-        )
+        job = self.job_manager.get_job(job_id)
+        if not job:
+            return
+        
+        # Import progress dialog
+        from gui.progress_dialog import ProgressDialog
+        from core.backup_engine import BackupEngine
+        import threading
+        
+        # Create progress dialog
+        progress_dialog = ProgressDialog(self, job.name)
+        progress_dialog.grab_set()
+        
+        # Run backup in thread
+        def run_backup():
+            try:
+                engine = BackupEngine()
+                
+                # Progress callback
+                def update_progress(progress):
+                    if progress_dialog.is_cancelled:
+                        engine.cancel_backup()
+                        return
+                    
+                    if progress_dialog.is_paused:
+                        engine.pause_backup()
+                    else:
+                        engine.resume_backup()
+                    
+                    # Update UI in main thread
+                    self.after(0, lambda: progress_dialog.update_progress(progress))
+                
+                # Perform backup
+                result = engine.perform_backup(
+                    source_paths=job.source_paths,
+                    destination_path=job.destination_path,
+                    backup_type=job.backup_type,
+                    filters=job.filters,
+                    compression=job.compression,
+                    progress_callback=update_progress
+                )
+                
+                # Update job
+                from datetime import datetime
+                self.job_manager.update_job(
+                    job_id,
+                    status="completed",
+                    last_run=datetime.now().isoformat()
+                )
+                
+                # Show completion
+                self.after(0, lambda: progress_dialog.show_completion(True, ""))
+                self.after(100, self._refresh_jobs)
+                
+            except Exception as e:
+                # Update job status
+                self.job_manager.update_job(job_id, status="failed")
+                
+                # Show error
+                self.after(0, lambda: progress_dialog.show_completion(False, str(e)))
+                self.after(100, self._refresh_jobs)
+        
+        # Start backup thread
+        backup_thread = threading.Thread(target=run_backup, daemon=True)
+        backup_thread.start()
     
     def _delete_job(self, job_id: str):
         """Delete a job."""
